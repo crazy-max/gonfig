@@ -1,5 +1,3 @@
-<p align="center"><img width="128" src="https://raw.githubusercontent.com/crazy-max/gonfig/master/.github/gonfig.png"></p>
-
 <p align="center">
   <a href="https://pkg.go.dev/crazy-max/gonfig"><img src="https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white&style=flat-square" alt="PkgGoDev"></a>
   <a href="https://github.com/crazy-max/gonfig/actions?workflow=test"><img src="https://img.shields.io/github/workflow/status/crazy-max/gonfig/test?label=test&logo=github&style=flat-square" alt="Test workflow"></a>
