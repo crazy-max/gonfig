@@ -10,7 +10,7 @@ import (
 // EnvLoader is the structure representring an environment variable loader.
 type EnvLoader struct {
 	vars []string
-	cfg  *EnvLoaderConfig
+	cfg  EnvLoaderConfig
 }
 
 // EnvLoaderConfig loads a configuration from environment variables.
@@ -20,7 +20,7 @@ type EnvLoaderConfig struct {
 }
 
 // New creates a new Loader from the EnvLoaderConfig cfg.
-func NewEnvLoader(cfg *EnvLoaderConfig) *EnvLoader {
+func NewEnvLoader(cfg EnvLoaderConfig) *EnvLoader {
 	return &EnvLoader{
 		cfg: cfg,
 	}

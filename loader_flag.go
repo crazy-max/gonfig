@@ -8,7 +8,7 @@ import (
 // FlagLoader is the structure representring a flag loader.
 type FlagLoader struct {
 	filename string
-	cfg      *FlagLoaderConfig
+	cfg      FlagLoaderConfig
 }
 
 // FlagLoaderConfig loads a configuration from flags.
@@ -18,7 +18,7 @@ type FlagLoaderConfig struct {
 }
 
 // New creates a new Loader from the FlagLoaderConfig cfg.
-func NewFlagLoader(cfg *FlagLoaderConfig) *FlagLoader {
+func NewFlagLoader(cfg FlagLoaderConfig) *FlagLoader {
 	return &FlagLoader{
 		cfg: cfg,
 	}

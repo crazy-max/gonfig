@@ -7,7 +7,7 @@ import (
 // FileLoader is the structure representring a file loader.
 type FileLoader struct {
 	filename string
-	cfg      *FileLoaderConfig
+	cfg      FileLoaderConfig
 }
 
 // FileLoader loads a configuration from a file.
@@ -17,7 +17,7 @@ type FileLoaderConfig struct {
 }
 
 // New creates a new Loader fromt the FileLoaderConfig cfg.
-func NewFileLoader(cfg *FileLoaderConfig) *FileLoader {
+func NewFileLoader(cfg FileLoaderConfig) *FileLoader {
 	return &FileLoader{
 		cfg: cfg,
 	}
