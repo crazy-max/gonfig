@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://pkg.go.dev/crazy-max/gonfig"><img src="https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white&style=flat-square" alt="PkgGoDev"></a>
+  <a href="https://pkg.go.dev/github.com/crazy-max/gonfig"><img src="https://img.shields.io/badge/go.dev-docs-007d9c?logo=go&logoColor=white&style=flat-square" alt="PkgGoDev"></a>
   <a href="https://github.com/crazy-max/gonfig/actions?workflow=test"><img src="https://img.shields.io/github/workflow/status/crazy-max/gonfig/test?label=test&logo=github&style=flat-square" alt="Test workflow"></a>
   <a href="https://goreportcard.com/report/github.com/crazy-max/gonfig"><img src="https://goreportcard.com/badge/github.com/crazy-max/gonfig?style=flat-square" alt="Go Report"></a>
   <a href="https://www.codacy.com/app/crazy-max/gonfig"><img src="https://img.shields.io/codacy/grade/8e30fc0cf1ce4c3b8ab1e427717458a7/master.svg?style=flat-square" alt="Code Quality"></a>
