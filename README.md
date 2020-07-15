@@ -8,15 +8,21 @@
   <a href="https://www.paypal.me/crazyws"><img src="https://img.shields.io/badge/donate-paypal-00457c.svg?logo=paypal&style=flat-square" alt="Donate Paypal"></a>
 </p>
 
+## About
+
+This library is largely inspired by the traefik config package. It offers the loading of the configuration via:
+
+* Configuration files in YAML or TOML format
+* Environmental variables
+* Flag arguments
+
+An example is available [here](_example).
+
 ## Installation
 
 ```
 go get github.com/crazy-max/gonfig
 ```
-
-## Usage
-
-_TODO_
 
 ## How can I help?
 
