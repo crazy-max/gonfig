@@ -1,0 +1,29 @@
+server:
+  ftp:
+    host: test.rebex.net
+    port: 21
+    username: demo
+    password: password
+    sources:
+      - /
+    timeout: 5s
+    disableEPSV: false
+    tls: false
+    insecureSkipVerify: false
+    logTrace: false
+
+notif:
+  mail:
+    host: localhost
+    port: 25
+    ssl: false
+    insecureSkipVerify: false
+    from: from@example.com
+    to: webmaster@example.com
+  webhook:
+    endpoint: http://webhook.foo.com/sd54qad89azd5a
+    method: GET
+    headers:
+      content-type: application/json
+      authorization: Token123456
+    timeout: 10s

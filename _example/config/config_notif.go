@@ -1,4 +1,4 @@
-package main
+package config
 
 // Notif holds data necessary for notification configuration
 type Notif struct {

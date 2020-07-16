@@ -1,4 +1,4 @@
-package main
+package config
 
 // NotifMail holds mail notification configuration details
 type NotifMail struct {

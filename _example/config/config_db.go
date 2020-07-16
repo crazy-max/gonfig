@@ -1,4 +1,4 @@
-package main
+package config
 
 // Db holds data necessary for database configuration
 type Db struct {
