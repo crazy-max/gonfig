@@ -4,8 +4,8 @@ import "time"
 
 // ServerFTP holds ftp server configuration
 type ServerFTP struct {
-	Host               string         `yaml:"host,omitempty" json:"host,omitempty" validate:"required"`
-	Port               int            `yaml:"port,omitempty" json:"port,omitempty" validate:"required,min=1"`
+	Host               string         `yaml:"host,omitempty" json:"host,omitempty"`
+	Port               int            `yaml:"port,omitempty" json:"port,omitempty"`
 	Username           string         `yaml:"username,omitempty" json:"username,omitempty"`
 	Password           string         `yaml:"password,omitempty" json:"password,omitempty"`
 	Sources            []string       `yaml:"sources,omitempty" json:"sources,omitempty"`
