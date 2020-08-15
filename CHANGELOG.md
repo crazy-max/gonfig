@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.0 (2020/08/15)
+
+* Go 1.15 support
+
 ## 0.2.0 (2020/07/16)
 
 * More tests
