@@ -15,7 +15,7 @@ import (
 // decodeFileToNode decodes the configuration in filePath in a tree of untyped nodes.
 // If filters is not empty, it skips any configuration element whose name is not among filters.
 func decodeFileToNode(filePath string, filters ...string) (*parser.Node, error) {
-	content, err := ioutil.ReadFile(filePath)
+	content, err := ioutil.ReadFile(filepath.Clean(filePath))
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +43,7 @@ func decodeFileToNode(filePath string, filters ...string) (*parser.Node, error) 
 		return nil, fmt.Errorf("no configuration found in file: %s", filePath)
 	}
 
-	node, err := decodeRawToNode(data, parser.DefaultRootName, filters...)
+	node, err := decodeRawToNode(data, filters...)
 	if err != nil {
 		return nil, err
 	}

@@ -107,8 +107,8 @@ func Test_getFlagTypes(t *testing.T) {
 		{
 			desc: "map bool",
 			element: &struct {
-				Foo map[string]bool
 				Fii struct{}
+				Foo map[string]bool
 			}{},
 			expected: map[string]reflect.Kind{
 				"foo." + parser.MapNamePlaceholder: reflect.Bool,

@@ -165,6 +165,60 @@ func TestEncodeNode(t *testing.T) {
 				"gonfig.foo[1].bbb": "bur1",
 			},
 		},
+		{
+			desc: "raw value, level 1",
+			node: &Node{
+				Name: "gonfig",
+				Children: []*Node{
+					{Name: "aaa", RawValue: map[string]interface{}{
+						"bbb": "test1",
+						"ccc": "test2",
+					}},
+				},
+			},
+			expected: map[string]string{
+				"gonfig.aaa.bbb": "test1",
+				"gonfig.aaa.ccc": "test2",
+			},
+		},
+		{
+			desc: "raw value, level 2",
+			node: &Node{
+				Name: "gonfig",
+				Children: []*Node{
+					{Name: "aaa", RawValue: map[string]interface{}{
+						"bbb": "test1",
+						"ccc": map[string]interface{}{
+							"ddd": "test2",
+						},
+					}},
+				},
+			},
+			expected: map[string]string{
+				"gonfig.aaa.bbb":     "test1",
+				"gonfig.aaa.ccc.ddd": "test2",
+			},
+		},
+		{
+			desc: "raw value, slice of struct",
+			node: &Node{
+				Name: "gonfig",
+				Children: []*Node{
+					{Name: "aaa", RawValue: map[string]interface{}{
+						"bbb": []interface{}{
+							map[string]interface{}{
+								"ccc": "test1",
+								"ddd": "test2",
+							},
+						},
+					}},
+				},
+			},
+			expected: map[string]string{
+				"gonfig.aaa.bbb[0].ccc": "test1",
+				"gonfig.aaa.bbb[0].ddd": "test2",
+			},
+		},
 	}
 
 	for _, test := range testCases {

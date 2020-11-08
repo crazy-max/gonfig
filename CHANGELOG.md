@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.0 (2020/11/08)
+
+* Handle raw values
+
 ## 0.3.0 (2020/08/15)
 
 * Go 1.15 support
