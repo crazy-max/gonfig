@@ -25,7 +25,6 @@ jobs:
       fail-fast: false
       matrix:
         go:
-          - 1.12
           - 1.13
           - 1.14
           - 1.15
