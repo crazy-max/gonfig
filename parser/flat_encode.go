@@ -139,11 +139,11 @@ func (e encoderToFlat) getNodeValue(field reflect.Value, node *Node) string {
 	}
 
 	if field.Kind() == reflect.Int64 {
-		i, _ := strconv.ParseInt(node.Value, 10, 64)
+		i, _ := strconv.Atoi(node.Value)
 
 		switch field.Type() {
 		case reflect.TypeOf(types.Duration(time.Second)):
-			return strconv.Itoa(int(i) / int(time.Second))
+			return strconv.Itoa(i / int(time.Second))
 		case reflect.TypeOf(time.Second):
 			return time.Duration(i).String()
 		}
