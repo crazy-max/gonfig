@@ -1,6 +1,6 @@
 module github.com/crazy-max/gonfig
 
-go 1.15
+go 1.13
 
 require (
 	github.com/BurntSushi/toml v0.4.1
