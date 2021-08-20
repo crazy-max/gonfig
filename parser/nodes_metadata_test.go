@@ -923,7 +923,7 @@ func TestAddMetadata(t *testing.T) {
 		{
 			desc: "invalid slice type",
 			tree: &Node{
-				Name: "traefik",
+				Name: "gonfig",
 				Children: []*Node{
 					{Name: "Foo", Children: []*Node{
 						{Name: "[0]", Children: []*Node{
