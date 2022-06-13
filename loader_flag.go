@@ -7,6 +7,7 @@ import (
 
 // FlagLoader is the structure representring a flag loader.
 type FlagLoader struct {
+	//nolint:structcheck,unused
 	filename string
 	cfg      FlagLoaderConfig
 }
