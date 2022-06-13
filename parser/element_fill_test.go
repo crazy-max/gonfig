@@ -735,6 +735,56 @@ func TestFill(t *testing.T) {
 			},
 		},
 		{
+			desc: "empty map",
+			node: &Node{
+				Name: "gonfig",
+				Kind: reflect.Struct,
+				Children: []*Node{
+					{
+						Name:      "Foo",
+						FieldName: "Foo",
+						Kind:      reflect.Map,
+						Children:  []*Node{},
+					},
+				},
+			},
+			element: &struct {
+				Foo map[string]string
+			}{},
+			expected: expected{
+				element: &struct {
+					Foo map[string]string
+				}{
+					Foo: map[string]string{},
+				},
+			},
+		},
+		{
+			desc: "slice string",
+			node: &Node{
+				Name: "gonfig",
+				Kind: reflect.Struct,
+				Children: []*Node{
+					{
+						Name:      "Foo",
+						FieldName: "Foo",
+						Kind:      reflect.Map,
+						Children:  []*Node{},
+					},
+				},
+			},
+			element: &struct {
+				Foo map[string]string
+			}{},
+			expected: expected{
+				element: &struct {
+					Foo map[string]string
+				}{
+					Foo: map[string]string{},
+				},
+			},
+		},
+		{
 			desc: "slice string",
 			node: &Node{
 				Name: "gonfig",
@@ -1498,7 +1548,7 @@ func TestFill(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			err := filler{FillerOpts: FillerOpts{AllowSliceAsStruct: true}}.Fill(test.element, test.node)
+			err := newFiller(FillerOpts{AllowSliceAsStruct: true}).Fill(test.element, test.node)
 			if test.expected.error {
 				require.Error(t, err)
 			} else {
