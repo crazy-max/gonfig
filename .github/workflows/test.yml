@@ -9,14 +9,24 @@ on:
   pull_request:
 
 jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v3
+      -
+        name: Run
+        uses: docker/bake-action@v2
+        with:
+          targets: validate
+
   test:
     runs-on: ubuntu-latest
-    env:
-      GO111MODULE: on
     strategy:
       fail-fast: false
       matrix:
-        go:
+        go_version:
           - 1.13
           - 1.14
           - 1.15
@@ -28,22 +38,12 @@ jobs:
         name: Checkout
         uses: actions/checkout@v3
       -
-        name: Set up Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: ${{ matrix.go }}
-      -
-        name: Cache Go modules
-        uses: actions/cache@v3
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ matrix.go }}-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-${{ matrix.go }}-
-      -
         name: Test
-        run: |
-          go test -coverprofile=coverage.txt -covermode=atomic ./...
+        uses: docker/bake-action@v2
+        with:
+          targets: test
+        env:
+          GO_VERSION: ${{ matrix.go_version }}
       -
         name: Upload coverage
         uses: codecov/codecov-action@v3
