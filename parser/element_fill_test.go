@@ -737,7 +737,7 @@ func TestFill(t *testing.T) {
 		{
 			desc: "empty map",
 			node: &Node{
-				Name: "traefik",
+				Name: "gonfig",
 				Kind: reflect.Struct,
 				Children: []*Node{
 					{
@@ -762,7 +762,7 @@ func TestFill(t *testing.T) {
 		{
 			desc: "slice string",
 			node: &Node{
-				Name: "traefik",
+				Name: "gonfig",
 				Kind: reflect.Struct,
 				Children: []*Node{
 					{

@@ -463,7 +463,7 @@ func TestEncodeToNode(t *testing.T) {
 			}{
 				Bar: map[string]string{"huu": "hii"},
 			},
-			expected: expected{node: &Node{Name: "traefik"}},
+			expected: expected{node: &Node{Name: "gonfig"}},
 		},
 		{
 			desc: "ignore map",
@@ -472,7 +472,7 @@ func TestEncodeToNode(t *testing.T) {
 			}{
 				Bar: map[string]string{"huu": "hii"},
 			},
-			expected: expected{node: &Node{Name: "traefik"}},
+			expected: expected{node: &Node{Name: "gonfig"}},
 		},
 		{
 			desc: "map with non string key",

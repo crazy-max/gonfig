@@ -37,8 +37,8 @@ func TestDecode_RawValue(t *testing.T) {
 			desc: "level 1",
 			elt:  &Tomato{},
 			labels: map[string]string{
-				"traefik.name":     "test",
-				"traefik.meta.aaa": "test",
+				"gonfig.name":     "test",
+				"gonfig.meta.aaa": "test",
 			},
 			expected: &Tomato{
 				Name: "test",
@@ -50,9 +50,9 @@ func TestDecode_RawValue(t *testing.T) {
 		{
 			desc: "level 2",
 			labels: map[string]string{
-				"traefik.name":         "test",
-				"traefik.meta.aaa":     "test",
-				"traefik.meta.bbb.ccc": "test",
+				"gonfig.name":         "test",
+				"gonfig.meta.aaa":     "test",
+				"gonfig.meta.bbb.ccc": "test",
 			},
 			elt: &Tomato{},
 			expected: &Tomato{
@@ -68,10 +68,10 @@ func TestDecode_RawValue(t *testing.T) {
 		{
 			desc: "level 3",
 			labels: map[string]string{
-				"traefik.name":             "test",
-				"traefik.meta.aaa":         "test",
-				"traefik.meta.bbb.ccc":     "test",
-				"traefik.meta.bbb.ddd.eee": "test",
+				"gonfig.name":             "test",
+				"gonfig.meta.aaa":         "test",
+				"gonfig.meta.bbb.ccc":     "test",
+				"gonfig.meta.bbb.ddd.eee": "test",
 			},
 			elt: &Tomato{},
 			expected: &Tomato{
@@ -91,9 +91,9 @@ func TestDecode_RawValue(t *testing.T) {
 			desc: "struct slice, one entry",
 			elt:  &Tomato{},
 			labels: map[string]string{
-				"traefik.name":            "test1",
-				"traefik.meta.aaa[0].bbb": "test2",
-				"traefik.meta.aaa[0].ccc": "test3",
+				"gonfig.name":            "test1",
+				"gonfig.meta.aaa[0].bbb": "test2",
+				"gonfig.meta.aaa[0].ccc": "test3",
 			},
 			expected: &Tomato{
 				Name: "test1",
@@ -111,13 +111,13 @@ func TestDecode_RawValue(t *testing.T) {
 			desc: "struct slice, multiple entries",
 			elt:  &Tomato{},
 			labels: map[string]string{
-				"traefik.name":            "test1",
-				"traefik.meta.aaa[0].bbb": "test2",
-				"traefik.meta.aaa[0].ccc": "test3",
-				"traefik.meta.aaa[1].bbb": "test4",
-				"traefik.meta.aaa[1].ccc": "test5",
-				"traefik.meta.aaa[2].bbb": "test6",
-				"traefik.meta.aaa[2].ccc": "test7",
+				"gonfig.name":            "test1",
+				"gonfig.meta.aaa[0].bbb": "test2",
+				"gonfig.meta.aaa[0].ccc": "test3",
+				"gonfig.meta.aaa[1].bbb": "test4",
+				"gonfig.meta.aaa[1].ccc": "test5",
+				"gonfig.meta.aaa[2].bbb": "test6",
+				"gonfig.meta.aaa[2].ccc": "test7",
 			},
 			expected: &Tomato{
 				Name: "test1",
@@ -143,8 +143,8 @@ func TestDecode_RawValue(t *testing.T) {
 			desc: "explicit map of map, level 1",
 			elt:  &Potato{},
 			labels: map[string]string{
-				"traefik.name":         "test",
-				"traefik.meta.aaa.bbb": "test1",
+				"gonfig.name":         "test",
+				"gonfig.meta.aaa.bbb": "test1",
 			},
 			expected: &Potato{
 				Name: "test",
@@ -159,9 +159,9 @@ func TestDecode_RawValue(t *testing.T) {
 			desc: "explicit map of map, level 2",
 			elt:  &Potato{},
 			labels: map[string]string{
-				"traefik.name":         "test",
-				"traefik.meta.aaa.bbb": "test1",
-				"traefik.meta.aaa.ccc": "test2",
+				"gonfig.name":         "test",
+				"gonfig.meta.aaa.bbb": "test1",
+				"gonfig.meta.aaa.ccc": "test2",
 			},
 			expected: &Potato{
 				Name: "test",
@@ -177,10 +177,10 @@ func TestDecode_RawValue(t *testing.T) {
 			desc: "explicit map of map, level 3",
 			elt:  &Potato{},
 			labels: map[string]string{
-				"traefik.name":             "test",
-				"traefik.meta.aaa.bbb.ccc": "test1",
-				"traefik.meta.aaa.bbb.ddd": "test2",
-				"traefik.meta.aaa.eee":     "test3",
+				"gonfig.name":             "test",
+				"gonfig.meta.aaa.bbb.ccc": "test1",
+				"gonfig.meta.aaa.bbb.ddd": "test2",
+				"gonfig.meta.aaa.eee":     "test3",
 			},
 			expected: &Potato{
 				Name: "test",
@@ -199,11 +199,11 @@ func TestDecode_RawValue(t *testing.T) {
 			desc: "explicit map of map, level 4",
 			elt:  &Potato{},
 			labels: map[string]string{
-				"traefik.name":                 "test",
-				"traefik.meta.aaa.bbb.ccc.ddd": "test1",
-				"traefik.meta.aaa.bbb.ccc.eee": "test2",
-				"traefik.meta.aaa.bbb.fff":     "test3",
-				"traefik.meta.aaa.ggg":         "test4",
+				"gonfig.name":                 "test",
+				"gonfig.meta.aaa.bbb.ccc.ddd": "test1",
+				"gonfig.meta.aaa.bbb.ccc.eee": "test2",
+				"gonfig.meta.aaa.bbb.fff":     "test3",
+				"gonfig.meta.aaa.ggg":         "test4",
 			},
 			expected: &Potato{
 				Name: "test",
@@ -225,9 +225,9 @@ func TestDecode_RawValue(t *testing.T) {
 			desc: "explicit map of map, struct slice, level 1, one entry",
 			elt:  &Potato{},
 			labels: map[string]string{
-				"traefik.name":                "test1",
-				"traefik.meta.aaa.bbb[0].ccc": "test2",
-				"traefik.meta.aaa.bbb[0].ddd": "test3",
+				"gonfig.name":                "test1",
+				"gonfig.meta.aaa.bbb[0].ccc": "test2",
+				"gonfig.meta.aaa.bbb[0].ddd": "test3",
 			},
 			expected: &Potato{
 				Name: "test1",
@@ -247,13 +247,13 @@ func TestDecode_RawValue(t *testing.T) {
 			desc: "explicit map of map, struct slice, level 1, multiple entries",
 			elt:  &Potato{},
 			labels: map[string]string{
-				"traefik.name":                "test1",
-				"traefik.meta.aaa.bbb[0].ccc": "test2",
-				"traefik.meta.aaa.bbb[0].ddd": "test3",
-				"traefik.meta.aaa.bbb[1].ccc": "test4",
-				"traefik.meta.aaa.bbb[1].ddd": "test5",
-				"traefik.meta.aaa.bbb[2].ccc": "test6",
-				"traefik.meta.aaa.bbb[2].ddd": "test7",
+				"gonfig.name":                "test1",
+				"gonfig.meta.aaa.bbb[0].ccc": "test2",
+				"gonfig.meta.aaa.bbb[0].ddd": "test3",
+				"gonfig.meta.aaa.bbb[1].ccc": "test4",
+				"gonfig.meta.aaa.bbb[1].ddd": "test5",
+				"gonfig.meta.aaa.bbb[2].ccc": "test6",
+				"gonfig.meta.aaa.bbb[2].ddd": "test7",
 			},
 			expected: &Potato{
 				Name: "test1",
@@ -281,9 +281,9 @@ func TestDecode_RawValue(t *testing.T) {
 			desc: "explicit map of map, struct slice, level 2, one entry",
 			elt:  &Potato{},
 			labels: map[string]string{
-				"traefik.name":                    "test1",
-				"traefik.meta.aaa.bbb.ccc[0].ddd": "test2",
-				"traefik.meta.aaa.bbb.ccc[0].eee": "test3",
+				"gonfig.name":                    "test1",
+				"gonfig.meta.aaa.bbb.ccc[0].ddd": "test2",
+				"gonfig.meta.aaa.bbb.ccc[0].eee": "test3",
 			},
 			expected: &Potato{
 				Name: "test1",
@@ -305,13 +305,13 @@ func TestDecode_RawValue(t *testing.T) {
 			desc: "explicit map of map, struct slice, level 2, multiple entries",
 			elt:  &Potato{},
 			labels: map[string]string{
-				"traefik.name":                    "test1",
-				"traefik.meta.aaa.bbb.ccc[0].ddd": "test2",
-				"traefik.meta.aaa.bbb.ccc[0].eee": "test3",
-				"traefik.meta.aaa.bbb.ccc[1].ddd": "test4",
-				"traefik.meta.aaa.bbb.ccc[1].eee": "test5",
-				"traefik.meta.aaa.bbb.ccc[2].ddd": "test6",
-				"traefik.meta.aaa.bbb.ccc[2].eee": "test7",
+				"gonfig.name":                    "test1",
+				"gonfig.meta.aaa.bbb.ccc[0].ddd": "test2",
+				"gonfig.meta.aaa.bbb.ccc[0].eee": "test3",
+				"gonfig.meta.aaa.bbb.ccc[1].ddd": "test4",
+				"gonfig.meta.aaa.bbb.ccc[1].eee": "test5",
+				"gonfig.meta.aaa.bbb.ccc[2].ddd": "test6",
+				"gonfig.meta.aaa.bbb.ccc[2].eee": "test7",
 			},
 			expected: &Potato{
 				Name: "test1",
@@ -341,12 +341,12 @@ func TestDecode_RawValue(t *testing.T) {
 			desc: "Ignore label tag, one element label for each type",
 			elt:  &Ignored{},
 			labels: map[string]string{
-				"traefik.string":       "test1",
-				"traefik.stringp":      "test1",
-				"traefik.struct.name":  "test1",
-				"traefik.structp.name": "test1",
-				"traefik.slice":        "test1",
-				"traefik.map.aaa":      "test1",
+				"gonfig.string":       "test1",
+				"gonfig.stringp":      "test1",
+				"gonfig.struct.name":  "test1",
+				"gonfig.structp.name": "test1",
+				"gonfig.slice":        "test1",
+				"gonfig.map.aaa":      "test1",
 			},
 			expected: &Ignored{
 				String:  "",
@@ -361,12 +361,12 @@ func TestDecode_RawValue(t *testing.T) {
 			desc: "Ignore label tag, one empty label for each type",
 			elt:  &Ignored{},
 			labels: map[string]string{
-				"traefik.string":  "",
-				"traefik.stringp": "",
-				"traefik.struct":  "",
-				"traefik.structp": "",
-				"traefik.slice":   "",
-				"traefik.map":     "",
+				"gonfig.string":  "",
+				"gonfig.stringp": "",
+				"gonfig.struct":  "",
+				"gonfig.structp": "",
+				"gonfig.slice":   "",
+				"gonfig.map":     "",
 			},
 			expected: &Ignored{
 				String:  "",
@@ -382,7 +382,7 @@ func TestDecode_RawValue(t *testing.T) {
 	for _, test := range testCases {
 		test := test
 		t.Run(test.desc, func(t *testing.T) {
-			err := Decode(test.labels, test.elt, "traefik")
+			err := Decode(test.labels, test.elt, "gonfig")
 			require.NoError(t, err)
 
 			assert.Equal(t, test.expected, test.elt)
