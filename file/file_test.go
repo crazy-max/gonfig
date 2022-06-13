@@ -1,7 +1,6 @@
 package file
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -10,7 +9,7 @@ import (
 )
 
 func TestDecode_TOML(t *testing.T) {
-	f, err := ioutil.TempFile("", "gonfig-*.toml")
+	f, err := os.CreateTemp("", "gonfig-*.toml")
 	require.NoError(t, err)
 	defer func() {
 		_ = os.Remove(f.Name())
@@ -93,7 +92,7 @@ name = "test"
 }
 
 func TestDecode_YAML(t *testing.T) {
-	f, err := ioutil.TempFile("", "gonfig-*.yaml")
+	f, err := os.CreateTemp("", "gonfig-*.yaml")
 	require.NoError(t, err)
 	defer func() {
 		_ = os.Remove(f.Name())
