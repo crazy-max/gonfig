@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.6.0 (2022/07/17)
+
+* Go 1.18 support (#32)
+* golangci-lint config (#34)
+* Container based dev flow (#33)
+* Drop Go 1.13 and 1.14 support (#33)
+* Backport from paerser (#18)
+  * fix(file): allow slice value that contains comma
+  * fix: ignore tag for label decoding
+* Bump github.com/BurntSushi/toml from 0.4.1 to 1.1.0 (#25)
+* Bump github.com/stretchr/testify from 1.7.0 to 1.7.2 (#30)
+* Bump github.com/stretchr/testify from 1.7.2 to 1.8.0 (#37)
+
 ## 0.5.0 (2021/08/21)
 
 * Incorrect conversion between integer types (#19)
