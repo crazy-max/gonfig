@@ -575,7 +575,7 @@ func TestFill(t *testing.T) {
 					{
 						Name:      "Foo",
 						FieldName: "Foo",
-						Kind:      reflect.Ptr,
+						Kind:      reflect.Pointer,
 					},
 				},
 			},
@@ -608,7 +608,7 @@ func TestFill(t *testing.T) {
 					{
 						Name:      "Foo",
 						FieldName: "Foo",
-						Kind:      reflect.Ptr,
+						Kind:      reflect.Pointer,
 						Disabled:  true,
 					},
 				},
@@ -638,7 +638,7 @@ func TestFill(t *testing.T) {
 						Name:      "Foo",
 						FieldName: "Foo",
 						Disabled:  true,
-						Kind:      reflect.Ptr,
+						Kind:      reflect.Pointer,
 						Children: []*Node{
 							{Name: "Fii", FieldName: "Fii", Value: "huu", Kind: reflect.String},
 							{Name: "Fuu", FieldName: "Fuu", Value: "6", Kind: reflect.Int},
@@ -1310,7 +1310,7 @@ func TestFill(t *testing.T) {
 				Name: "gonfig",
 				Kind: reflect.Struct,
 				Children: []*Node{
-					{Name: "Foo", FieldName: "Foo", Value: "4", Kind: reflect.Ptr},
+					{Name: "Foo", FieldName: "Foo", Value: "4", Kind: reflect.Pointer},
 				},
 			},
 			element:  &struct{ Foo *int }{},
@@ -1322,7 +1322,7 @@ func TestFill(t *testing.T) {
 				Name: "gonfig",
 				Kind: reflect.Struct,
 				Children: []*Node{
-					{Name: "Foo", FieldName: "Foo", Value: "true", Kind: reflect.Ptr},
+					{Name: "Foo", FieldName: "Foo", Value: "true", Kind: reflect.Pointer},
 				},
 			},
 			element:  &struct{ Foo *bool }{},
@@ -1334,7 +1334,7 @@ func TestFill(t *testing.T) {
 				Name: "gonfig",
 				Kind: reflect.Struct,
 				Children: []*Node{
-					{Name: "Foo", FieldName: "Foo", Value: "bar", Kind: reflect.Ptr},
+					{Name: "Foo", FieldName: "Foo", Value: "bar", Kind: reflect.Pointer},
 				},
 			},
 			element:  &struct{ Foo *string }{},
@@ -1427,15 +1427,15 @@ func TestFill(t *testing.T) {
 				Kind: reflect.Struct,
 				Children: []*Node{
 					{Name: "Foo", FieldName: "Foo", Kind: reflect.Slice, Children: []*Node{
-						{Name: "[0]", Kind: reflect.Ptr, Children: []*Node{
+						{Name: "[0]", Kind: reflect.Pointer, Children: []*Node{
 							{Name: "Field1", FieldName: "Field1", Value: "A", Kind: reflect.String},
 							{Name: "Field2", FieldName: "Field2", Value: "A", Kind: reflect.String},
 						}},
-						{Name: "[1]", Kind: reflect.Ptr, Children: []*Node{
+						{Name: "[1]", Kind: reflect.Pointer, Children: []*Node{
 							{Name: "Field1", FieldName: "Field1", Value: "B", Kind: reflect.String},
 							{Name: "Field2", FieldName: "Field2", Value: "B", Kind: reflect.String},
 						}},
-						{Name: "[2]", Kind: reflect.Ptr, Children: []*Node{
+						{Name: "[2]", Kind: reflect.Pointer, Children: []*Node{
 							{Name: "Field1", FieldName: "Field1", Value: "C", Kind: reflect.String},
 							{Name: "Field2", FieldName: "Field2", Value: "C", Kind: reflect.String},
 						}},
@@ -1468,7 +1468,7 @@ func TestFill(t *testing.T) {
 			desc: "raw value",
 			node: &Node{
 				Name: "gonfig",
-				Kind: reflect.Ptr,
+				Kind: reflect.Pointer,
 				Children: []*Node{
 					{Name: "meta", FieldName: "Meta", Kind: reflect.Map, RawValue: map[string]interface{}{
 						"aaa": "test",
@@ -1506,7 +1506,7 @@ func TestFill(t *testing.T) {
 			desc: "explicit map of map, raw value",
 			node: &Node{
 				Name: "gonfig",
-				Kind: reflect.Ptr,
+				Kind: reflect.Pointer,
 				Children: []*Node{
 					{Name: "meta", FieldName: "Meta", Kind: reflect.Map, Children: []*Node{
 						{Name: "aaa", Kind: reflect.Map, Children: []*Node{
@@ -1547,7 +1547,7 @@ func TestFill(t *testing.T) {
 			rawSliceSeparator: ".",
 			node: &Node{
 				Name: "traefik",
-				Kind: reflect.Ptr,
+				Kind: reflect.Pointer,
 				Children: []*Node{{
 					Name:      "meta",
 					FieldName: "Meta",
