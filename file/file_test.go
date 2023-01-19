@@ -68,6 +68,7 @@ fii = "bir"
 }
 
 func TestDecodeContent_TOML_rawSlice(t *testing.T) {
+	//nolint:dupword // false positive
 	content := `
 [testData]
 trustIP = [
