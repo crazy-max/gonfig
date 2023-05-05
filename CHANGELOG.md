@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.1 (2023/05/05)
+
+* handle `time.Time` reflection (#47)
+
 ## 0.7.0 (2023/05/05)
 
 * Go 1.20 (#43)
