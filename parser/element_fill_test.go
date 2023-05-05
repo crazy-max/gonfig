@@ -1546,7 +1546,7 @@ func TestFill(t *testing.T) {
 			desc:              "raw value of slice of map",
 			rawSliceSeparator: ".",
 			node: &Node{
-				Name: "traefik",
+				Name: "gonfig",
 				Kind: reflect.Pointer,
 				Children: []*Node{{
 					Name:      "meta",
@@ -1585,7 +1585,7 @@ func TestFill(t *testing.T) {
 			desc:              "recursive slices",
 			rawSliceSeparator: "║",
 			node: &Node{
-				Name: "traefik",
+				Name: "gonfig",
 				Kind: reflect.Pointer,
 				Children: []*Node{
 					{

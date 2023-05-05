@@ -650,7 +650,7 @@ func Test_decodeFileToNode_Json(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := &parser.Node{
-		Name: "traefik",
+		Name: "gonfig",
 		Children: []*parser.Node{
 			{Name: "accessLog", Children: []*parser.Node{
 				{Name: "bufferingSize", Value: "42"},
