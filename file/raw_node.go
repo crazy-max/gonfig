@@ -6,6 +6,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/crazy-max/gonfig/parser"
 )
@@ -120,6 +121,12 @@ func decodeRaw(node *parser.Node, vData reflect.Value, filters ...string) error 
 			err := decodeRaw(child, value)
 			if err != nil {
 				return err
+			}
+		case reflect.Struct:
+			if value.Type() == reflect.TypeOf(time.Time{}) {
+				child.Value = value.Interface().(time.Time).Format(time.RFC3339Nano)
+			} else {
+				return fmt.Errorf("field %s uses unsupported type: %s", child.Name, value.Kind().String())
 			}
 		default:
 			return fmt.Errorf("field %s uses unsupported type: %s", child.Name, value.Kind().String())
