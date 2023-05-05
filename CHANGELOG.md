@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.7.0 (2023/05/05)
+
+* Go 1.20 (#43)
+* Backport from paerser (#45)
+  * fix: raw slice parsing
+  * fix: return error when a string is use instead of a slice
+  * fix: typo in error message
+  * fix: allow invalid configuration
+  * fix: raw slice of struct in raw type
+  * feat: add .json file extension to file.Decode
+  * allow decoding of nested raw typed slices
+* Bump gopkg.in/yaml.v3 to v3.0.1 (#44)
+* Bump github.com/BurntSushi/toml from 1.1.0 to 1.2.1 (#38 #39)
+* Bump github.com/stretchr/testify from 1.8.0 to 1.8.2 (#41)
+
 ## 0.6.0 (2022/07/17)
 
 * Go 1.18 support (#32)
