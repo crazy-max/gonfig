@@ -67,6 +67,44 @@ fii = "bir"
 	assert.Equal(t, expected, element)
 }
 
+func TestDecodeContent_TOML_rawSlice(t *testing.T) {
+	//nolint:dupword // false positive
+	content := `
+[testData]
+trustIP = [
+  "10.0.0.0/8",
+  "172.0.0.0/8",
+  "192.0.0.0/8"
+]
+koo = [1, 2, 3]
+soo = [1, "a", 3]
+boo = [1, 2.6, 3]
+hoo = [true, false, false, true]
+buckets = [42.01, 42.02]
+
+  [testData.Headers]
+  Foo = "Bar"
+`
+
+	var element FooRaw
+
+	err := DecodeContent(content, ".toml", &element)
+	require.NoError(t, err)
+
+	expected := FooRaw{
+		TestData: map[string]interface{}{
+			"Headers": map[string]interface{}{"Foo": "Bar"},
+			"trustIP": []interface{}{"10.0.0.0/8", "172.0.0.0/8", "192.0.0.0/8"},
+			"koo":     []interface{}{int64(1), int64(2), int64(3)},
+			"soo":     []interface{}{"1", "a", "3"},
+			"boo":     []interface{}{float64(1), 2.6, float64(3)},
+			"hoo":     []interface{}{true, false, false, true},
+			"buckets": []interface{}{42.01, 42.02},
+		},
+	}
+	assert.EqualValues(t, expected, element)
+}
+
 func TestDecodeContent_TOML_rawValue(t *testing.T) {
 	content := `
 name = "test"
@@ -145,6 +183,64 @@ yi: {}
 		Yi: &Yi{
 			Foo: "foo",
 			Fii: "fii",
+		},
+	}
+	assert.Equal(t, expected, element)
+}
+
+func TestDecodeContent_YAML_rawSlice(t *testing.T) {
+	content := `
+testData:
+  Headers:
+    Foo: Bar
+  trustIP:
+    - 10.0.0.0/8
+    - 172.0.0.0/8
+    - 192.0.0.0/8
+  koo:
+    - 1
+    - 2
+    - 3
+  soo:
+    - 1
+    - a
+    - 3
+  boo:
+    - 1
+    - 2.6
+    - 3
+  buckets:
+    - 42.01
+    - 42.02
+  hoo:
+    - true
+    - false
+    - false
+    - true
+  joo:
+    - name: a
+      value: 1
+    - name: c
+      value: 2
+`
+
+	var element FooRaw
+	err := DecodeContent(content, ".yaml", &element)
+	require.NoError(t, err)
+
+	expected := FooRaw{
+		TestData: map[string]interface{}{
+			"Headers": map[string]interface{}{"Foo": "Bar"},
+			"trustIP": []interface{}{"10.0.0.0/8", "172.0.0.0/8", "192.0.0.0/8"},
+			"koo":     []interface{}{int64(1), int64(2), int64(3)},
+			"soo":     []interface{}{"1", "a", "3"},
+			"boo":     []interface{}{float64(1), 2.6, float64(3)},
+			"hoo":     []interface{}{true, false, false, true},
+			"buckets": []interface{}{42.01, 42.02},
+			"joo": []interface{}{
+				map[string]interface{}{"name": "a", "value": "1"},
+				map[string]interface{}{"name": "c", "value": "2"},
+			},
 		},
 	}
 	assert.Equal(t, expected, element)
@@ -234,6 +330,45 @@ meta:
 		Meta: map[string]interface{}{
 			"aaa": []interface{}{map[string]interface{}{"bbb": "1"}},
 			"bbb": map[string]interface{}{"foo": "bar"},
+		},
+	}
+	assert.Equal(t, expected, element)
+}
+
+func TestDecodeContent_YAML_typedSliceRecursive(t *testing.T) {
+	content := `
+foo:
+  - foo
+  - bar
+bar:
+  foo:
+  - foo
+  - bar
+  baz:
+    foo:
+    - foo
+    - bar
+    boz:
+      foo:
+      - 42
+      - 42
+`
+
+	element := map[string]interface{}{}
+
+	err := DecodeContent(content, ".yaml", &element)
+	require.NoError(t, err)
+
+	expected := map[string]interface{}{
+		"foo": []interface{}{"foo", "bar"},
+		"bar": map[string]interface{}{
+			"foo": []interface{}{"foo", "bar"},
+			"baz": map[string]interface{}{
+				"foo": []interface{}{"foo", "bar"},
+				"boz": map[string]interface{}{
+					"foo": []interface{}{int64(42), int64(42)},
+				},
+			},
 		},
 	}
 	assert.Equal(t, expected, element)

@@ -17,10 +17,11 @@ func TestFill(t *testing.T) {
 	}
 
 	testCases := []struct {
-		desc     string
-		node     *Node
-		element  interface{}
-		expected expected
+		desc              string
+		rawSliceSeparator string
+		node              *Node
+		element           interface{}
+		expected          expected
 	}{
 		{
 			desc:     "empty node",
@@ -574,7 +575,7 @@ func TestFill(t *testing.T) {
 					{
 						Name:      "Foo",
 						FieldName: "Foo",
-						Kind:      reflect.Ptr,
+						Kind:      reflect.Pointer,
 					},
 				},
 			},
@@ -607,7 +608,7 @@ func TestFill(t *testing.T) {
 					{
 						Name:      "Foo",
 						FieldName: "Foo",
-						Kind:      reflect.Ptr,
+						Kind:      reflect.Pointer,
 						Disabled:  true,
 					},
 				},
@@ -637,7 +638,7 @@ func TestFill(t *testing.T) {
 						Name:      "Foo",
 						FieldName: "Foo",
 						Disabled:  true,
-						Kind:      reflect.Ptr,
+						Kind:      reflect.Pointer,
 						Children: []*Node{
 							{Name: "Fii", FieldName: "Fii", Value: "huu", Kind: reflect.String},
 							{Name: "Fuu", FieldName: "Fuu", Value: "6", Kind: reflect.Int},
@@ -1309,7 +1310,7 @@ func TestFill(t *testing.T) {
 				Name: "gonfig",
 				Kind: reflect.Struct,
 				Children: []*Node{
-					{Name: "Foo", FieldName: "Foo", Value: "4", Kind: reflect.Ptr},
+					{Name: "Foo", FieldName: "Foo", Value: "4", Kind: reflect.Pointer},
 				},
 			},
 			element:  &struct{ Foo *int }{},
@@ -1321,7 +1322,7 @@ func TestFill(t *testing.T) {
 				Name: "gonfig",
 				Kind: reflect.Struct,
 				Children: []*Node{
-					{Name: "Foo", FieldName: "Foo", Value: "true", Kind: reflect.Ptr},
+					{Name: "Foo", FieldName: "Foo", Value: "true", Kind: reflect.Pointer},
 				},
 			},
 			element:  &struct{ Foo *bool }{},
@@ -1333,7 +1334,7 @@ func TestFill(t *testing.T) {
 				Name: "gonfig",
 				Kind: reflect.Struct,
 				Children: []*Node{
-					{Name: "Foo", FieldName: "Foo", Value: "bar", Kind: reflect.Ptr},
+					{Name: "Foo", FieldName: "Foo", Value: "bar", Kind: reflect.Pointer},
 				},
 			},
 			element:  &struct{ Foo *string }{},
@@ -1426,15 +1427,15 @@ func TestFill(t *testing.T) {
 				Kind: reflect.Struct,
 				Children: []*Node{
 					{Name: "Foo", FieldName: "Foo", Kind: reflect.Slice, Children: []*Node{
-						{Name: "[0]", Kind: reflect.Ptr, Children: []*Node{
+						{Name: "[0]", Kind: reflect.Pointer, Children: []*Node{
 							{Name: "Field1", FieldName: "Field1", Value: "A", Kind: reflect.String},
 							{Name: "Field2", FieldName: "Field2", Value: "A", Kind: reflect.String},
 						}},
-						{Name: "[1]", Kind: reflect.Ptr, Children: []*Node{
+						{Name: "[1]", Kind: reflect.Pointer, Children: []*Node{
 							{Name: "Field1", FieldName: "Field1", Value: "B", Kind: reflect.String},
 							{Name: "Field2", FieldName: "Field2", Value: "B", Kind: reflect.String},
 						}},
-						{Name: "[2]", Kind: reflect.Ptr, Children: []*Node{
+						{Name: "[2]", Kind: reflect.Pointer, Children: []*Node{
 							{Name: "Field1", FieldName: "Field1", Value: "C", Kind: reflect.String},
 							{Name: "Field2", FieldName: "Field2", Value: "C", Kind: reflect.String},
 						}},
@@ -1467,7 +1468,7 @@ func TestFill(t *testing.T) {
 			desc: "raw value",
 			node: &Node{
 				Name: "gonfig",
-				Kind: reflect.Ptr,
+				Kind: reflect.Pointer,
 				Children: []*Node{
 					{Name: "meta", FieldName: "Meta", Kind: reflect.Map, RawValue: map[string]interface{}{
 						"aaa": "test",
@@ -1505,7 +1506,7 @@ func TestFill(t *testing.T) {
 			desc: "explicit map of map, raw value",
 			node: &Node{
 				Name: "gonfig",
-				Kind: reflect.Ptr,
+				Kind: reflect.Pointer,
 				Children: []*Node{
 					{Name: "meta", FieldName: "Meta", Kind: reflect.Map, Children: []*Node{
 						{Name: "aaa", Kind: reflect.Map, Children: []*Node{
@@ -1541,6 +1542,87 @@ func TestFill(t *testing.T) {
 				},
 			}},
 		},
+		{
+			desc:              "raw value of slice of map",
+			rawSliceSeparator: ".",
+			node: &Node{
+				Name: "gonfig",
+				Kind: reflect.Pointer,
+				Children: []*Node{{
+					Name:      "meta",
+					FieldName: "Meta",
+					RawValue: map[string]interface{}{
+						"bar": []interface{}{
+							map[string]interface{}{
+								"name":  "a",
+								"value": "1",
+							},
+							map[string]interface{}{
+								"name":  "b",
+								"value": "2",
+							},
+						},
+					},
+					Disabled: false,
+					Kind:     reflect.Map,
+				}},
+			},
+			element: &struct {
+				Meta map[string]interface{}
+			}{},
+			expected: expected{element: &struct {
+				Meta map[string]interface{}
+			}{
+				Meta: map[string]interface{}{
+					"bar": []interface{}{
+						map[string]interface{}{"name": "a", "value": "1"},
+						map[string]interface{}{"name": "b", "value": "2"},
+					},
+				},
+			}},
+		},
+		{
+			desc:              "recursive slices",
+			rawSliceSeparator: "║",
+			node: &Node{
+				Name: "gonfig",
+				Kind: reflect.Pointer,
+				Children: []*Node{
+					{
+						Name: "bar",
+						RawValue: map[string]interface{}{
+							"baz": map[string]interface{}{
+								"boz": map[string]interface{}{
+									"foo": "║2║42║42",
+								},
+								"foo": "║24║foo║bar",
+							},
+							"foo": "║24║foo║bar",
+						},
+					},
+					{
+						Name:  "foo",
+						Value: "║24║foo║bar",
+						RawValue: map[string]interface{}{
+							"foo": "║24║foo║bar",
+						},
+					},
+				},
+			},
+			element: &map[string]interface{}{},
+			expected: expected{element: &map[string]interface{}{
+				"foo": []interface{}{"foo", "bar"},
+				"bar": map[string]interface{}{
+					"foo": []interface{}{"foo", "bar"},
+					"baz": map[string]interface{}{
+						"foo": []interface{}{"foo", "bar"},
+						"boz": map[string]interface{}{
+							"foo": []interface{}{int64(42), int64(42)},
+						},
+					},
+				},
+			}},
+		},
 	}
 
 	for _, test := range testCases {
@@ -1548,7 +1630,7 @@ func TestFill(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			err := newFiller(FillerOpts{AllowSliceAsStruct: true}).Fill(test.element, test.node)
+			err := newFiller(FillerOpts{AllowSliceAsStruct: true, RawSliceSeparator: test.rawSliceSeparator}).Fill(test.element, test.node)
 			if test.expected.error {
 				require.Error(t, err)
 			} else {

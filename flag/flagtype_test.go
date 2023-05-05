@@ -63,8 +63,8 @@ func Test_getFlagTypes(t *testing.T) {
 				}
 			}{},
 			expected: map[string]reflect.Kind{
-				"foo":           reflect.Ptr,
-				"foo.fii":       reflect.Ptr,
+				"foo":           reflect.Pointer,
+				"foo.fii":       reflect.Pointer,
 				"foo.fii.field": reflect.Bool,
 			},
 		},
@@ -76,7 +76,7 @@ func Test_getFlagTypes(t *testing.T) {
 				}
 			}{},
 			expected: map[string]reflect.Kind{
-				"foo": reflect.Ptr,
+				"foo": reflect.Pointer,
 			},
 		},
 		{
@@ -91,9 +91,9 @@ func Test_getFlagTypes(t *testing.T) {
 				}
 			}{},
 			expected: map[string]reflect.Kind{
-				"foo":               reflect.Ptr,
-				"foo.fii":           reflect.Ptr,
-				"foo.fii.fuu":       reflect.Ptr,
+				"foo":               reflect.Pointer,
+				"foo.fii":           reflect.Pointer,
+				"foo.fii.fuu":       reflect.Pointer,
 				"foo.fii.fuu.field": reflect.Bool,
 			},
 		},
@@ -126,7 +126,7 @@ func Test_getFlagTypes(t *testing.T) {
 			},
 		},
 		{
-			desc: "map map bool",
+			desc: "map of map bool",
 			element: &struct {
 				Foo map[string]map[string]bool
 			}{},

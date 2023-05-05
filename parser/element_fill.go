@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"math"
 	"reflect"
 	"strconv"
 	"strings"
@@ -96,7 +97,7 @@ func (f filler) fill(field reflect.Value, node *Node) error {
 		return setFloat(field, node.Value, 64)
 	case reflect.Struct:
 		return f.setStruct(field, node)
-	case reflect.Ptr:
+	case reflect.Pointer:
 		return f.setPtr(field, node)
 	case reflect.Map:
 		return f.setMap(field, node)
@@ -142,7 +143,7 @@ func (f filler) setStruct(field reflect.Value, node *Node) error {
 
 func (f filler) setSlice(field reflect.Value, node *Node) error {
 	if field.Type().Elem().Kind() == reflect.Struct ||
-		field.Type().Elem().Kind() == reflect.Ptr && field.Type().Elem().Elem().Kind() == reflect.Struct {
+		field.Type().Elem().Kind() == reflect.Pointer && field.Type().Elem().Elem().Kind() == reflect.Struct {
 		return f.setSliceStruct(field, node)
 	}
 
@@ -151,7 +152,20 @@ func (f filler) setSlice(field reflect.Value, node *Node) error {
 	}
 
 	values := strings.Split(node.Value, f.RawSliceSeparator)
+	if f.RawSliceSeparator != defaultRawSliceSeparator {
+		if len(values) < 2 {
+			// TODO(ldez): must be changed to an error.
+			return makeSlice(field, strings.Split(node.Value, defaultRawSliceSeparator))
+		}
 
+		// TODO(ldez): this is related to raw map and file. Rethink the node parser.
+		values = values[2:]
+	}
+
+	return makeSlice(field, values)
+}
+
+func makeSlice(field reflect.Value, values []string) error {
 	slice := reflect.MakeSlice(field.Type(), len(values), len(values))
 	field.Set(slice)
 
@@ -245,7 +259,7 @@ func (f filler) setSliceStruct(field reflect.Value, node *Node) error {
 
 	for i, child := range node.Children {
 		// use Ptr to allow "SetDefaults"
-		value := reflect.New(reflect.PtrTo(field.Type().Elem()))
+		value := reflect.New(reflect.PointerTo(field.Type().Elem()))
 		err := f.setPtr(value, child)
 		if err != nil {
 			return err
@@ -263,9 +277,8 @@ func (f filler) setSliceAsStruct(field reflect.Value, node *Node) error {
 	}
 
 	// use Ptr to allow "SetDefaults"
-	value := reflect.New(reflect.PtrTo(field.Type().Elem()))
-	err := f.setPtr(value, node)
-	if err != nil {
+	value := reflect.New(reflect.PointerTo(field.Type().Elem()))
+	if err := f.setPtr(value, node); err != nil {
 		return err
 	}
 
@@ -283,17 +296,23 @@ func (f filler) setMap(field reflect.Value, node *Node) error {
 	}
 
 	if field.Type().Elem().Kind() == reflect.Interface {
-		fillRawValue(field, node, false)
+		err := f.fillRawValue(field, node, false)
+		if err != nil {
+			return err
+		}
 
 		for _, child := range node.Children {
-			fillRawValue(field, child, true)
+			err = f.fillRawValue(field, child, true)
+			if err != nil {
+				return err
+			}
 		}
 
 		return nil
 	}
 
 	for _, child := range node.Children {
-		ptrValue := reflect.New(reflect.PtrTo(field.Type().Elem()))
+		ptrValue := reflect.New(reflect.PointerTo(field.Type().Elem()))
 
 		err := f.fill(ptrValue, child)
 		if err != nil {
@@ -362,22 +381,198 @@ func setFloat(field reflect.Value, value string, bitSize int) error {
 	return nil
 }
 
-func fillRawValue(field reflect.Value, node *Node, subMap bool) {
+func (f filler) fillRawValue(field reflect.Value, node *Node, subMap bool) error {
 	m, ok := node.RawValue.(map[string]interface{})
 	if !ok {
-		return
+		return nil
 	}
 
 	if _, self := m[node.Name]; self || !subMap {
 		for k, v := range m {
-			field.SetMapIndex(reflect.ValueOf(k), reflect.ValueOf(v))
+			if f.RawSliceSeparator == defaultRawSliceSeparator {
+				field.SetMapIndex(reflect.ValueOf(k), reflect.ValueOf(v))
+				continue
+			}
+
+			// TODO(ldez): all the next section is related to raw map and file. Rethink the node parser.
+
+			s, ok := v.(string)
+			if !ok || len(s) == 0 || !strings.HasPrefix(s, f.RawSliceSeparator) {
+				rawValue, err := f.cleanRawValue(reflect.ValueOf(v))
+				if err != nil {
+					return err
+				}
+
+				field.SetMapIndex(reflect.ValueOf(k), rawValue)
+				continue
+			}
+
+			// typed slice
+
+			value, err := f.fillRawTypedSlice(s)
+			if err != nil {
+				return err
+			}
+
+			field.SetMapIndex(reflect.ValueOf(k), value)
 		}
 
-		return
+		return nil
+	}
+
+	// In the case of sub-map, fill raw typed slices recursively.
+	_, err := f.fillRawMapWithTypedSlice(m)
+	if err != nil {
+		return err
 	}
 
 	p := map[string]interface{}{node.Name: m}
 	node.RawValue = p
 
 	field.SetMapIndex(reflect.ValueOf(node.Name), reflect.ValueOf(p[node.Name]))
+
+	return nil
+}
+
+func (f filler) fillRawMapWithTypedSlice(elt interface{}) (reflect.Value, error) {
+	eltValue := reflect.ValueOf(elt)
+
+	switch eltValue.Kind() {
+	case reflect.String:
+		if strings.HasPrefix(elt.(string), f.RawSliceSeparator) {
+			sliceValue, err := f.fillRawTypedSlice(elt.(string))
+			if err != nil {
+				return eltValue, err
+			}
+
+			return sliceValue, nil
+		}
+
+	case reflect.Map:
+		for k, v := range elt.(map[string]interface{}) {
+			value, err := f.fillRawMapWithTypedSlice(v)
+			if err != nil {
+				return eltValue, err
+			}
+
+			eltValue.SetMapIndex(reflect.ValueOf(k), value)
+		}
+	}
+
+	return eltValue, nil
+}
+
+func (f filler) fillRawTypedSlice(s string) (reflect.Value, error) {
+	raw := strings.Split(s, f.RawSliceSeparator)
+
+	rawType, err := strconv.Atoi(raw[1])
+	if err != nil {
+		return reflect.Value{}, err
+	}
+
+	kind := reflect.Kind(rawType)
+
+	slice := reflect.MakeSlice(reflect.TypeOf([]interface{}{}), len(raw[2:]), len(raw[2:]))
+
+	for i := 0; i < len(raw[2:]); i++ {
+		switch kind {
+		case reflect.Bool:
+			val, err := strconv.ParseBool(raw[i+2])
+			if err != nil {
+				return reflect.Value{}, fmt.Errorf("parse bool: %s, %w", raw[i+2], err)
+			}
+			slice.Index(i).Set(reflect.ValueOf(val))
+		case reflect.Int:
+			val, err := strconv.ParseInt(raw[i+2], 10, 64)
+			if err != nil {
+				return reflect.Value{}, fmt.Errorf("parse int: %s, %w", raw[i+2], err)
+			}
+			slice.Index(i).Set(reflect.ValueOf(val))
+		case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+			val, err := strconv.ParseInt(raw[i+2], 10, int(math.Pow(2, float64(kind-reflect.Int+2))))
+			if err != nil {
+				return reflect.Value{}, fmt.Errorf("parse %s: %s, %w", kind, raw[i+2], err)
+			}
+			slice.Index(i).Set(reflect.ValueOf(val))
+		case reflect.Uint:
+			val, err := strconv.ParseUint(raw[i+2], 10, 64)
+			if err != nil {
+				return reflect.Value{}, fmt.Errorf("parse uint: %s, %w", raw[i+2], err)
+			}
+			slice.Index(i).Set(reflect.ValueOf(val))
+		case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+			val, err := strconv.ParseUint(raw[i+2], 10, int(math.Pow(2, float64(kind-reflect.Uint+2))))
+			if err != nil {
+				return reflect.Value{}, fmt.Errorf("parse uint: %s, %w", raw[i+2], err)
+			}
+			slice.Index(i).Set(reflect.ValueOf(val))
+		case reflect.Float32:
+			err := setFloat(slice.Index(i), raw[i+2], 32)
+			if err != nil {
+				return reflect.Value{}, fmt.Errorf("parse float32: %s, %w", raw[i+2], err)
+			}
+		case reflect.Float64:
+			err := setFloat(slice.Index(i), raw[i+2], 64)
+			if err != nil {
+				return reflect.Value{}, fmt.Errorf("parse float64: %s, %w", raw[i+2], err)
+			}
+		case reflect.String:
+			slice.Index(i).Set(reflect.ValueOf(raw[i+2]))
+		default:
+			return reflect.Value{}, fmt.Errorf("unsupported kind: %d", kind)
+		}
+	}
+
+	return slice, nil
+}
+
+func (f filler) cleanRawValue(value reflect.Value) (reflect.Value, error) {
+	switch value.Kind() {
+	case reflect.Pointer:
+		rawValue, err := f.cleanRawValue(value.Elem())
+		if err != nil {
+			return reflect.Value{}, err
+		}
+
+		value.Elem().Set(rawValue)
+
+	case reflect.Map:
+		keys := value.MapKeys()
+		for _, key := range keys {
+			v := value.MapIndex(key)
+
+			rawValue, err := f.cleanRawValue(v)
+			if err != nil {
+				return reflect.Value{}, err
+			}
+
+			value.SetMapIndex(key, rawValue)
+		}
+
+	case reflect.Slice:
+		if value.IsZero() {
+			return value, nil
+		}
+
+		for i := 0; i < value.Len(); i++ {
+			if !value.Index(i).IsZero() {
+				rawValue, err := f.cleanRawValue(value.Index(i))
+				if err != nil {
+					return reflect.Value{}, err
+				}
+
+				value.Index(i).Set(rawValue)
+			}
+		}
+
+	case reflect.Interface:
+		return f.cleanRawValue(value.Elem())
+
+	case reflect.String:
+		if strings.HasPrefix(value.String(), f.RawSliceSeparator) {
+			return f.fillRawTypedSlice(value.String())
+		}
+	}
+
+	return value, nil
 }
