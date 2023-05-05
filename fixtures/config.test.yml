@@ -7,15 +7,32 @@ server:
     sources:
       - /
     timeout: 5s
+    disableUTF8: true
     disableEPSV: false
+    disableMLSD: false
     tls: false
     insecureSkipVerify: false
     logTrace: false
 
+download:
+  output: ./fixtures/downloads
+  uid: 1000
+  gid: 1000
+  chmodFile: 0o644
+  chmodDir: 0o755
+  include:
+    - ^Foo\.Bar\.S01.+(VOSTFR|SUBFRENCH).+(720p).+(HDTV|WEB-DL|WEBRip).+
+  exclude:
+    - \.nfo$
+  since: 2019-02-01T18:50:05Z
+  retry: 3
+  hideSkipped: false
+  createBaseDir: false
+
 notif:
   mail:
-    host: localhost
-    port: 25
+    host: smtp.example.com
+    port: 587
     ssl: false
     insecureSkipVerify: false
     from: from@example.com

@@ -1,7 +1,6 @@
 package gonfig
 
 import (
-	"os"
 	"strings"
 	"testing"
 	"time"
@@ -13,8 +12,6 @@ import (
 )
 
 func TestEnvLoader(t *testing.T) {
-	defer UnsetEnv(env.DefaultNamePrefix)
-
 	testCases := []struct {
 		desc     string
 		cfgfile  string
@@ -50,7 +47,10 @@ func TestEnvLoader(t *testing.T) {
 							"/",
 						},
 						Timeout:            example.NewDuration(5 * time.Second),
+						DisableUTF8:        example.NewFalse(),
 						DisableEPSV:        example.NewFalse(),
+						DisableMLSD:        example.NewFalse(),
+						EscapeRegexpMeta:   example.NewFalse(),
 						TLS:                example.NewFalse(),
 						InsecureSkipVerify: example.NewFalse(),
 						LogTrace:           example.NewFalse(),
@@ -63,12 +63,10 @@ func TestEnvLoader(t *testing.T) {
 
 	for _, tt := range testCases {
 		t.Run(tt.desc, func(t *testing.T) {
-			UnsetEnv(env.DefaultNamePrefix)
-
 			if tt.environ != nil {
 				for _, environ := range tt.environ {
 					n := strings.SplitN(environ, "=", 2)
-					os.Setenv(n[0], n[1])
+					t.Setenv(n[0], n[1])
 				}
 			}
 
@@ -125,16 +123,33 @@ func TestFileLoader(t *testing.T) {
 							"/",
 						},
 						Timeout:            example.NewDuration(5 * time.Second),
+						DisableUTF8:        example.NewTrue(),
 						DisableEPSV:        example.NewFalse(),
+						DisableMLSD:        example.NewFalse(),
+						EscapeRegexpMeta:   example.NewFalse(),
 						TLS:                example.NewFalse(),
 						InsecureSkipVerify: example.NewFalse(),
 						LogTrace:           example.NewFalse(),
 					},
 				},
+				Download: &example.Download{
+					Output:        "./fixtures/downloads",
+					UID:           1000,
+					GID:           1000,
+					ChmodFile:     0o644,
+					ChmodDir:      0o755,
+					Include:       []string{`^Foo\.Bar\.S01.+(VOSTFR|SUBFRENCH).+(720p).+(HDTV|WEB-DL|WEBRip).+`},
+					Exclude:       []string{`\.nfo$`},
+					Since:         "2019-02-01T18:50:05Z",
+					Retry:         3,
+					HideSkipped:   example.NewFalse(),
+					TempFirst:     example.NewFalse(),
+					CreateBaseDir: example.NewFalse(),
+				},
 				Notif: &example.Notif{
 					Mail: &example.NotifMail{
-						Host:               "localhost",
-						Port:               25,
+						Host:               "smtp.example.com",
+						Port:               587,
 						SSL:                example.NewFalse(),
 						InsecureSkipVerify: example.NewFalse(),
 						From:               "from@example.com",
@@ -211,7 +226,10 @@ func TestFlagLoader(t *testing.T) {
 							"/src2",
 						},
 						Timeout:            example.NewDuration(5 * time.Second),
+						DisableUTF8:        example.NewFalse(),
 						DisableEPSV:        example.NewTrue(),
+						DisableMLSD:        example.NewFalse(),
+						EscapeRegexpMeta:   example.NewFalse(),
 						TLS:                example.NewFalse(),
 						InsecureSkipVerify: example.NewFalse(),
 						LogTrace:           example.NewFalse(),
@@ -239,54 +257,5 @@ func TestFlagLoader(t *testing.T) {
 			assert.Equal(t, tt.found, found)
 			assert.Equal(t, tt.expected, cfg)
 		})
-	}
-}
-
-func UnsetEnv(prefix string) (restore func()) {
-	before := map[string]string{}
-
-	for _, e := range os.Environ() {
-		if !strings.HasPrefix(e, prefix) {
-			continue
-		}
-
-		parts := strings.SplitN(e, "=", 2)
-		before[parts[0]] = parts[1]
-
-		os.Unsetenv(parts[0])
-	}
-
-	return func() {
-		after := map[string]string{}
-
-		for _, e := range os.Environ() {
-			if !strings.HasPrefix(e, prefix) {
-				continue
-			}
-
-			parts := strings.SplitN(e, "=", 2)
-			after[parts[0]] = parts[1]
-
-			// Check if the envar previously existed
-			v, ok := before[parts[0]]
-			if !ok {
-				// This is a newly added envar with prefix, zap it
-				os.Unsetenv(parts[0])
-				continue
-			}
-
-			if parts[1] != v {
-				// If the envar value has changed, set it back
-				os.Setenv(parts[0], v)
-			}
-		}
-
-		// Still need to check if there have been any deleted envars
-		for k, v := range before {
-			if _, ok := after[k]; !ok {
-				// k is not present in after, so we set it.
-				os.Setenv(k, v)
-			}
-		}
 	}
 }

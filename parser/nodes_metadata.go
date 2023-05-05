@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"time"
 )
 
 // MetadataOpts Options for the metadata.
@@ -75,13 +76,15 @@ func (m metadata) add(rootType reflect.Type, node *Node) error {
 	node.Kind = fType.Kind()
 	node.Tag = field.Tag
 
-	if fType.Kind() == reflect.Struct || fType.Kind() == reflect.Pointer && fType.Elem().Kind() == reflect.Struct ||
-		fType.Kind() == reflect.Map {
-		if len(node.Children) == 0 && !(field.Tag.Get(m.TagName) == TagLabelAllowEmpty || field.Tag.Get(m.TagName) == "-") {
-			return fmt.Errorf("%s cannot be a standalone element (type %s)", node.Name, fType)
-		}
+	if fType != reflect.TypeOf(time.Time{}) {
+		if fType.Kind() == reflect.Struct || fType.Kind() == reflect.Pointer && fType.Elem().Kind() == reflect.Struct ||
+			fType.Kind() == reflect.Map {
+			if len(node.Children) == 0 && !(field.Tag.Get(m.TagName) == TagLabelAllowEmpty || field.Tag.Get(m.TagName) == "-") {
+				return fmt.Errorf("%s cannot be a standalone element (type %s)", node.Name, fType)
+			}
 
-		node.Disabled = len(node.Value) > 0 && !strings.EqualFold(node.Value, "true") && field.Tag.Get(m.TagName) == TagLabelAllowEmpty
+			node.Disabled = len(node.Value) > 0 && !strings.EqualFold(node.Value, "true") && field.Tag.Get(m.TagName) == TagLabelAllowEmpty
+		}
 	}
 
 	node.Disabled = node.Disabled || field.Tag.Get(m.TagName) == "-"
@@ -90,8 +93,10 @@ func (m metadata) add(rootType reflect.Type, node *Node) error {
 		return nil
 	}
 
-	if fType.Kind() == reflect.Struct || fType.Kind() == reflect.Pointer && fType.Elem().Kind() == reflect.Struct {
-		return m.browseChildren(fType, node)
+	if fType != reflect.TypeOf(time.Time{}) {
+		if fType.Kind() == reflect.Struct || fType.Kind() == reflect.Pointer && fType.Elem().Kind() == reflect.Struct {
+			return m.browseChildren(fType, node)
+		}
 	}
 
 	if fType.Kind() == reflect.Map {
