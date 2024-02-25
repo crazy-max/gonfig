@@ -46,6 +46,7 @@ jobs:
           GO_VERSION: ${{ matrix.go_version }}
       -
         name: Upload coverage
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           file: ./coverage.txt
+          token: ${{ secrets.CODECOV_TOKEN }}
