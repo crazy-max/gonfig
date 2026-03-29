@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"os"
 
@@ -69,5 +68,5 @@ func main() {
 
 	// Display configuration
 	b, _ := json.MarshalIndent(cfg, "", "  ")
-	fmt.Println(string(b))
+	log.Print(string(b))
 }

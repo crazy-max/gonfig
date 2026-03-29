@@ -102,7 +102,7 @@ buckets = [42.01, 42.02]
 			"buckets": []interface{}{42.01, 42.02},
 		},
 	}
-	assert.EqualValues(t, expected, element)
+	assert.Equal(t, expected, element)
 }
 
 func TestDecodeContent_TOML_rawValue(t *testing.T) {
