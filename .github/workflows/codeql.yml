@@ -4,32 +4,29 @@ concurrency:
   group: codeql-${{ github.ref }}
   cancel-in-progress: true
 
-# https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#permissions
 permissions:
   contents: read
 
 on:
+  schedule:
+    - cron: '0 12 * * 6'
   push:
     branches:
       - 'master'
     tags:
       - '*'
   pull_request:
-  schedule:
-    - cron: '0 12 * * 6'
 
 jobs:
   codeql:
     runs-on: ubuntu-latest
     permissions:
-      # same as global permissions
-      contents: read
-      # required for code scanning
-      security-events: write
+      contents: read # same as global permissions
+      security-events: write # required for code scanning
     steps:
       -
         name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 2
       -
@@ -39,12 +36,12 @@ jobs:
           git checkout HEAD^2
       -
         name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@5c8a8a642e79153f5d047b10ec1cba1d1cc65699 # v3.35.1
         with:
           languages: go
       -
         name: Autobuild
-        uses: github/codeql-action/autobuild@v3
+        uses: github/codeql-action/autobuild@5c8a8a642e79153f5d047b10ec1cba1d1cc65699 # v3.35.1
       -
         name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@5c8a8a642e79153f5d047b10ec1cba1d1cc65699 # v3.35.1
