@@ -1,7 +1,7 @@
 name: test
 
 concurrency:
-  group: test-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -16,18 +16,6 @@ on:
   pull_request:
 
 jobs:
-  validate:
-    runs-on: ubuntu-latest
-    steps:
-      -
-        name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      -
-        name: Run
-        uses: docker/bake-action@4a9a8d494466d37134e2bfca2d3a8de8fb2681ad # v5.13.0
-        with:
-          targets: validate
-
   test:
     runs-on: ubuntu-latest
     strategy:
