@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	example "github.com/crazy-max/gonfig/_example/config"
+	example "github.com/crazy-max/gonfig/contrib/example/config"
 	"github.com/crazy-max/gonfig/env"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

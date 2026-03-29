@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/crazy-max/gonfig"
-	"github.com/crazy-max/gonfig/_example/config"
+	"github.com/crazy-max/gonfig/contrib/example/config"
 	"github.com/pkg/errors"
 )
 

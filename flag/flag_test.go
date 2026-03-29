@@ -151,6 +151,51 @@ func TestDecode(t *testing.T) {
 			},
 		},
 		{
+			desc: "map string with '.' in key",
+			args: []string{"--foo.name.value=bar"},
+			element: &struct {
+				Foo map[string]string
+			}{},
+			expected: &struct {
+				Foo map[string]string
+			}{
+				Foo: map[string]string{
+					"name.value": "bar",
+				},
+			},
+		},
+		{
+			desc: "map string with '.' in key and multiple entries",
+			args: []string{"--foo.name.value=bar", "--foo.name.value2=bar2"},
+			element: &struct {
+				Foo map[string]string
+			}{},
+			expected: &struct {
+				Foo map[string]string
+			}{
+				Foo: map[string]string{
+					"name.value":  "bar",
+					"name.value2": "bar2",
+				},
+			},
+		},
+		{
+			desc: "map string with '.' in key and multiple mixed entries",
+			args: []string{"--foo.name.value=bar", "--foo.name.value2=bar2", "--foo.name2=bar3"},
+			element: &struct {
+				Foo map[string]string
+			}{},
+			expected: &struct {
+				Foo map[string]string
+			}{
+				Foo: map[string]string{
+					"name.value":  "bar",
+					"name.value2": "bar2",
+					"name2":       "bar3",
+				},
+			},
+		},
+		{
 			desc: "map struct",
 			args: []string{"--foo.name.value=bar"},
 			element: &struct {

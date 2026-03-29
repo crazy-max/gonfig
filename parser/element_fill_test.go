@@ -693,6 +693,97 @@ func TestFill(t *testing.T) {
 			},
 		},
 		{
+			desc: "map string with key containing '.'",
+			node: &Node{
+				Name: "gonfig",
+				Kind: reflect.Struct,
+				Children: []*Node{
+					{
+						Name:      "Foo",
+						FieldName: "Foo",
+						Kind:      reflect.Map,
+						Children: []*Node{
+							{Name: "name", Kind: reflect.Map, Children: []*Node{{Name: "value", Value: "hii", Kind: reflect.String}}},
+						},
+					},
+				},
+			},
+			element: &struct {
+				Foo map[string]string
+			}{},
+			expected: expected{
+				element: &struct {
+					Foo map[string]string
+				}{
+					Foo: map[string]string{
+						"name.value": "hii",
+					},
+				},
+			},
+		},
+		{
+			desc: "map string with keys containing '.' and multiple entries",
+			node: &Node{
+				Name: "gonfig",
+				Kind: reflect.Struct,
+				Children: []*Node{
+					{
+						Name:      "Foo",
+						FieldName: "Foo",
+						Kind:      reflect.Map,
+						Children: []*Node{
+							{Name: "name1", Kind: reflect.Map, Children: []*Node{{Name: "value", Value: "hii", Kind: reflect.String}, {Name: "value2", Value: "hii", Kind: reflect.String}}},
+						},
+					},
+				},
+			},
+			element: &struct {
+				Foo map[string]string
+			}{},
+			expected: expected{
+				element: &struct {
+					Foo map[string]string
+				}{
+					Foo: map[string]string{
+						"name1.value":  "hii",
+						"name1.value2": "hii",
+					},
+				},
+			},
+		},
+		{
+			desc: "map string with keys containing '.' and multiple mixed entries",
+			node: &Node{
+				Name: "gonfig",
+				Kind: reflect.Struct,
+				Children: []*Node{
+					{
+						Name:      "Foo",
+						FieldName: "Foo",
+						Kind:      reflect.Map,
+						Children: []*Node{
+							{Name: "name1", Kind: reflect.Map, Children: []*Node{{Name: "value", Value: "hii", Kind: reflect.String}, {Name: "value2", Value: "hii", Kind: reflect.String}}},
+							{Name: "name2", Kind: reflect.String, Value: "hii"},
+						},
+					},
+				},
+			},
+			element: &struct {
+				Foo map[string]string
+			}{},
+			expected: expected{
+				element: &struct {
+					Foo map[string]string
+				}{
+					Foo: map[string]string{
+						"name1.value":  "hii",
+						"name1.value2": "hii",
+						"name2":        "hii",
+					},
+				},
+			},
+		},
+		{
 			desc: "map struct",
 			node: &Node{
 				Name: "gonfig",
@@ -1619,6 +1710,37 @@ func TestFill(t *testing.T) {
 						"boz": map[string]interface{}{
 							"foo": []interface{}{int64(42), int64(42)},
 						},
+					},
+				},
+			}},
+		},
+		{
+			desc:              "slice struct with slice",
+			rawSliceSeparator: "║",
+			node: &Node{
+				Name: "gonfig",
+				Kind: reflect.Pointer,
+				Children: []*Node{
+					{Name: "Foo", FieldName: "Foo", Kind: reflect.Map, Children: []*Node{
+						{Name: "Field1", FieldName: "Field1", RawValue: map[string]interface{}{
+							"Field2": []interface{}{map[string]interface{}{"Values": "║24║foo║bar"}},
+						}},
+						{Name: "Field3", RawValue: map[string]interface{}{
+							"Values": "║24║foo║bar",
+						}},
+					}},
+				},
+			},
+			element: &struct {
+				Foo map[string]interface{}
+			}{},
+			expected: expected{element: &struct {
+				Foo map[string]interface{}
+			}{
+				Foo: map[string]interface{}{
+					"Field1": map[string]interface{}{"Field2": []interface{}{map[string]interface{}{"Values": []interface{}{"foo", "bar"}}}},
+					"Field3": map[string]interface{}{
+						"Values": []interface{}{"foo", "bar"},
 					},
 				},
 			}},

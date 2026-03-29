@@ -18,7 +18,7 @@ type FlagLoaderConfig struct {
 	Args []string
 }
 
-// New creates a new Loader from the FlagLoaderConfig cfg.
+// NewFlagLoader creates a new Loader from the FlagLoaderConfig cfg.
 func NewFlagLoader(cfg FlagLoaderConfig) *FlagLoader {
 	return &FlagLoader{
 		cfg: cfg,
