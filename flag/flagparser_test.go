@@ -132,6 +132,39 @@ func TestParse(t *testing.T) {
 			},
 		},
 		{
+			desc: "map string with '.' in key",
+			args: []string{"--foo.name.value=bar"},
+			element: &struct {
+				Foo map[string]string
+			}{},
+			expected: map[string]string{
+				"gonfig.foo.name.value": "bar",
+			},
+		},
+		{
+			desc: "map string with '.' in key and multiple entries",
+			args: []string{"--foo.name.value=bar", "--foo.name2.value2=baz"},
+			element: &struct {
+				Foo map[string]string
+			}{},
+			expected: map[string]string{
+				"gonfig.foo.name.value":   "bar",
+				"gonfig.foo.name2.value2": "baz",
+			},
+		},
+		{
+			desc: "map string with '.' in key and multiple mixed entries",
+			args: []string{"--foo.name.value=bar", "--foo.name2.value2=baz", "--foo.name3=bay"},
+			element: &struct {
+				Foo map[string]string
+			}{},
+			expected: map[string]string{
+				"gonfig.foo.name.value":   "bar",
+				"gonfig.foo.name2.value2": "baz",
+				"gonfig.foo.name3":        "bay",
+			},
+		},
+		{
 			desc: "map struct",
 			args: []string{"--foo.name.value=bar"},
 			element: &struct {

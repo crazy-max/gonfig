@@ -290,6 +290,17 @@ func (f filler) setSliceAsStruct(field reflect.Value, node *Node) error {
 	return nil
 }
 
+func (f filler) fillRecursively(parent string, node *Node, field reflect.Value) {
+	if len(node.Children) == 0 {
+		field.SetMapIndex(reflect.ValueOf(parent), reflect.ValueOf(node.Value))
+		return
+	}
+
+	for _, child := range node.Children {
+		f.fillRecursively(parent+"."+child.Name, child, field)
+	}
+}
+
 func (f filler) setMap(field reflect.Value, node *Node) error {
 	if field.IsNil() {
 		field.Set(reflect.MakeMap(field.Type()))
@@ -306,6 +317,14 @@ func (f filler) setMap(field reflect.Value, node *Node) error {
 			if err != nil {
 				return err
 			}
+		}
+
+		return nil
+	}
+
+	if field.Type().Elem().Kind() == reflect.String {
+		for _, child := range node.Children {
+			f.fillRecursively(child.Name, child, field)
 		}
 
 		return nil

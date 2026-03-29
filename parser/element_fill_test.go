@@ -693,6 +693,97 @@ func TestFill(t *testing.T) {
 			},
 		},
 		{
+			desc: "map string with key containing '.'",
+			node: &Node{
+				Name: "gonfig",
+				Kind: reflect.Struct,
+				Children: []*Node{
+					{
+						Name:      "Foo",
+						FieldName: "Foo",
+						Kind:      reflect.Map,
+						Children: []*Node{
+							{Name: "name", Kind: reflect.Map, Children: []*Node{{Name: "value", Value: "hii", Kind: reflect.String}}},
+						},
+					},
+				},
+			},
+			element: &struct {
+				Foo map[string]string
+			}{},
+			expected: expected{
+				element: &struct {
+					Foo map[string]string
+				}{
+					Foo: map[string]string{
+						"name.value": "hii",
+					},
+				},
+			},
+		},
+		{
+			desc: "map string with keys containing '.' and multiple entries",
+			node: &Node{
+				Name: "gonfig",
+				Kind: reflect.Struct,
+				Children: []*Node{
+					{
+						Name:      "Foo",
+						FieldName: "Foo",
+						Kind:      reflect.Map,
+						Children: []*Node{
+							{Name: "name1", Kind: reflect.Map, Children: []*Node{{Name: "value", Value: "hii", Kind: reflect.String}, {Name: "value2", Value: "hii", Kind: reflect.String}}},
+						},
+					},
+				},
+			},
+			element: &struct {
+				Foo map[string]string
+			}{},
+			expected: expected{
+				element: &struct {
+					Foo map[string]string
+				}{
+					Foo: map[string]string{
+						"name1.value":  "hii",
+						"name1.value2": "hii",
+					},
+				},
+			},
+		},
+		{
+			desc: "map string with keys containing '.' and multiple mixed entries",
+			node: &Node{
+				Name: "gonfig",
+				Kind: reflect.Struct,
+				Children: []*Node{
+					{
+						Name:      "Foo",
+						FieldName: "Foo",
+						Kind:      reflect.Map,
+						Children: []*Node{
+							{Name: "name1", Kind: reflect.Map, Children: []*Node{{Name: "value", Value: "hii", Kind: reflect.String}, {Name: "value2", Value: "hii", Kind: reflect.String}}},
+							{Name: "name2", Kind: reflect.String, Value: "hii"},
+						},
+					},
+				},
+			},
+			element: &struct {
+				Foo map[string]string
+			}{},
+			expected: expected{
+				element: &struct {
+					Foo map[string]string
+				}{
+					Foo: map[string]string{
+						"name1.value":  "hii",
+						"name1.value2": "hii",
+						"name2":        "hii",
+					},
+				},
+			},
+		},
+		{
 			desc: "map struct",
 			node: &Node{
 				Name: "gonfig",
