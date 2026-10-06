@@ -1170,6 +1170,22 @@ func Test_nodeToRawMap(t *testing.T) {
 				"name": "test1",
 			},
 		},
+		{
+			desc: "map with empty string key",
+			root: &Node{
+				Name: "gonfig",
+				Children: []*Node{
+					{Name: "meta", Children: []*Node{
+						{Name: "", Value: "emptykey"},
+					}},
+				},
+			},
+			expected: map[string]interface{}{
+				"meta": map[string]interface{}{
+					"": "emptykey",
+				},
+			},
+		},
 	}
 
 	for _, test := range testCases {
