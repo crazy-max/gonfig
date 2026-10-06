@@ -188,6 +188,22 @@ yi: {}
 	assert.Equal(t, expected, element)
 }
 
+func TestDecode_YAML_invalidMergeKey(t *testing.T) {
+	content := "<<: {foo: bar}\n? [a, b]\n: value\n"
+
+	t.Run("file", func(t *testing.T) {
+		path := t.TempDir() + "/config.yaml"
+		require.NoError(t, os.WriteFile(path, []byte(content), 0o600))
+		var element struct{ Meta map[string]interface{} }
+		require.ErrorContains(t, Decode(path, &element), "unhashable")
+	})
+
+	t.Run("content", func(t *testing.T) {
+		var element struct{ Meta map[string]interface{} }
+		require.ErrorContains(t, DecodeContent(content, ".yaml", &element), "unhashable")
+	})
+}
+
 func TestDecodeContent_YAML_rawSlice(t *testing.T) {
 	content := `
 testData:
