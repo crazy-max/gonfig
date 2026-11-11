@@ -1,15 +1,228 @@
 package gonfig
 
 import (
+	"errors"
+	"net"
 	"strings"
 	"testing"
 	"time"
 
 	example "github.com/crazy-max/gonfig/contrib/example/config"
 	"github.com/crazy-max/gonfig/env"
+	"github.com/crazy-max/gonfig/file"
+	"github.com/crazy-max/gonfig/flag"
+	"github.com/crazy-max/gonfig/parser"
+	"github.com/crazy-max/gonfig/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+type textDuration time.Duration
+
+var errTextDuration = errors.New("invalid custom duration")
+
+func (d *textDuration) UnmarshalText(text []byte) error {
+	switch string(text) {
+	case "30d":
+		*d = textDuration(30 * 24 * time.Hour)
+	case "2w":
+		*d = textDuration(14 * 24 * time.Hour)
+	case "":
+		*d = 0
+	default:
+		return errTextDuration
+	}
+	return nil
+}
+
+type textName string
+
+func (n *textName) UnmarshalText(text []byte) error {
+	*n = textName(strings.ToUpper(string(text)))
+	return nil
+}
+
+func TestTextUnmarshaler(t *testing.T) {
+	type config struct {
+		Duration    textDuration
+		Pointer     *textDuration
+		Absent      *textDuration
+		Durations   []textDuration
+		Pointers    []*textDuration
+		Names       map[string]textName
+		Times       []time.Time
+		Time        time.Time
+		TimePointer *time.Time
+		IP          net.IP
+		IPs         []net.IP
+		Native      time.Duration
+		Legacy      types.Duration
+		Ignored     textDuration `label:"-" file:"-"`
+	}
+	for _, tc := range []struct {
+		name   string
+		decode func(*config) error
+	}{
+		{
+			name: "environment",
+			decode: func(c *config) error {
+				return env.Decode([]string{
+					"GONFIG_DURATION=30d", "GONFIG_POINTER=2w",
+					"GONFIG_DURATIONS=30d,2w", "GONFIG_POINTERS=30d,2w",
+					"GONFIG_NAMES_FIRST=hello", "GONFIG_TIMES=2026-01-01T00:00:00Z",
+					"GONFIG_TIME=2026-01-01T00:00:00Z", "GONFIG_TIMEPOINTER=2026-01-01T00:00:00Z",
+					"GONFIG_IP=192.0.2.1", "GONFIG_NATIVE=42", "GONFIG_LEGACY=42",
+					"GONFIG_IGNORED=invalid",
+					"GONFIG_IPS=192.0.2.1,192.0.2.2",
+				}, env.DefaultNamePrefix, c)
+			},
+		},
+		{
+			name: "yaml",
+			decode: func(c *config) error {
+				return file.DecodeContent(`duration: 30d
+pointer: 2w
+durations: [30d, 2w]
+pointers: [30d, 2w]
+names:
+  first: hello
+times: ["2026-01-01T00:00:00Z"]
+time: "2026-01-01T00:00:00Z"
+timePointer: "2026-01-01T00:00:00Z"
+ip: 192.0.2.1
+ips: [192.0.2.1, 192.0.2.2]
+native: 42
+legacy: 42
+ignored: invalid
+`, ".yaml", c)
+			},
+		},
+		{
+			name: "toml",
+			decode: func(c *config) error {
+				return file.DecodeContent(`duration = "30d"
+pointer = "2w"
+durations = ["30d", "2w"]
+pointers = ["30d", "2w"]
+times = ["2026-01-01T00:00:00Z"]
+time = "2026-01-01T00:00:00Z"
+timePointer = "2026-01-01T00:00:00Z"
+ip = "192.0.2.1"
+ips = ["192.0.2.1", "192.0.2.2"]
+native = 42
+legacy = 42
+ignored = "invalid"
+[names]
+first = "hello"
+`, ".toml", c)
+			},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			var c config
+			require.NoError(t, tc.decode(&c))
+			assert.Equal(t, textDuration(720*time.Hour), c.Duration)
+			require.NotNil(t, c.Pointer)
+			assert.Equal(t, textDuration(336*time.Hour), *c.Pointer)
+			assert.Nil(t, c.Absent)
+			assert.Equal(t, []textDuration{c.Duration, *c.Pointer}, c.Durations)
+			require.Len(t, c.Pointers, 2)
+			assert.Equal(t, &c.Duration, c.Pointers[0])
+			assert.Equal(t, c.Pointer, c.Pointers[1])
+			assert.Equal(t, map[string]textName{"first": "HELLO"}, c.Names)
+			wantTime := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+			assert.Equal(t, wantTime, c.Time)
+			assert.Equal(t, &wantTime, c.TimePointer)
+			assert.Equal(t, []time.Time{wantTime}, c.Times)
+			assert.Equal(t, net.ParseIP("192.0.2.1"), c.IP)
+			assert.Equal(t, []net.IP{net.ParseIP("192.0.2.1"), net.ParseIP("192.0.2.2")}, c.IPs)
+			assert.Equal(t, time.Duration(42), c.Native)
+			assert.Equal(t, types.Duration(42*time.Second), c.Legacy)
+			assert.Zero(t, c.Ignored)
+		})
+	}
+}
+
+type textAddress struct {
+	Host string
+}
+
+func (a *textAddress) UnmarshalText(text []byte) error {
+	a.Host = strings.ToUpper(string(text))
+	return nil
+}
+
+func TestTextUnmarshalerStructuredInput(t *testing.T) {
+	type config struct {
+		Address   textAddress
+		Pointer   *textAddress
+		Addresses []textAddress
+	}
+	for _, tc := range []struct {
+		name   string
+		decode func(*config) error
+	}{
+		{
+			name: "environment",
+			decode: func(c *config) error {
+				return env.Decode([]string{"GONFIG_ADDRESS_HOST=example.org", "GONFIG_POINTER_HOST=example.org"}, env.DefaultNamePrefix, c)
+			},
+		},
+		{
+			name: "yaml",
+			decode: func(c *config) error {
+				return file.DecodeContent("address:\n  host: example.org\npointer:\n  host: example.org\naddresses:\n  - host: example.org\n", ".yaml", c)
+			},
+		},
+		{
+			name: "toml",
+			decode: func(c *config) error {
+				return file.DecodeContent("[address]\nhost = 'example.org'\n[pointer]\nhost = 'example.org'\n[[addresses]]\nhost = 'example.org'\n", ".toml", c)
+			},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			var c config
+			require.NoError(t, tc.decode(&c))
+			assert.Equal(t, textAddress{Host: "example.org"}, c.Address)
+			assert.Equal(t, &c.Address, c.Pointer)
+			if tc.name != "environment" {
+				assert.Equal(t, []textAddress{c.Address}, c.Addresses)
+			}
+		})
+	}
+
+	c := struct{ Address textAddress }{Address: textAddress{Host: "example.org"}}
+	environment, err := env.Encode(env.DefaultNamePrefix, &c)
+	require.NoError(t, err)
+	assert.Contains(t, environment, parser.Flat{Name: "GONFIG_ADDRESS_HOST", Default: "example.org"})
+	flags, err := flag.Encode(&c)
+	require.NoError(t, err)
+	assert.Contains(t, flags, parser.Flat{Name: "address.host", Default: "example.org"})
+
+	require.NoError(t, env.Decode([]string{"GONFIG_ADDRESS=example.org"}, env.DefaultNamePrefix, &c))
+	assert.Equal(t, "EXAMPLE.ORG", c.Address.Host)
+}
+
+func TestTextUnmarshalerErrors(t *testing.T) {
+	for _, field := range []string{"duration", "pointer", "durations", "values.entry"} {
+		t.Run(field, func(t *testing.T) {
+			var c struct {
+				Duration  textDuration
+				Pointer   *textDuration
+				Durations []textDuration
+				Values    map[string]textDuration
+			}
+			key := "GONFIG_" + strings.ToUpper(strings.ReplaceAll(field, ".", "_"))
+			err := env.Decode([]string{key + "=invalid"}, env.DefaultNamePrefix, &c)
+			require.ErrorIs(t, err, errTextDuration)
+		})
+	}
+	var c struct{ Duration textDuration }
+	c.Duration = 1
+	require.NoError(t, env.Decode([]string{"GONFIG_DURATION="}, env.DefaultNamePrefix, &c))
+	assert.Zero(t, c.Duration)
+}
 
 func TestEnvLoader(t *testing.T) {
 	testCases := []struct {

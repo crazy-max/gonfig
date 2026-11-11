@@ -1,7 +1,10 @@
 package parser
 
 import (
+	"errors"
+	"net"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -9,6 +12,132 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+var errTextValue = errors.New("invalid text value")
+
+type textValue string
+
+func (v *textValue) UnmarshalText(text []byte) error {
+	if string(text) == "invalid" {
+		return errTextValue
+	}
+	*v = textValue(strings.ToUpper(string(text)))
+	return nil
+}
+
+type textStruct struct {
+	Value textValue
+}
+
+func (v *textStruct) UnmarshalText(text []byte) error {
+	return v.Value.UnmarshalText(text)
+}
+
+func TestFillTextUnmarshaler(t *testing.T) {
+	existing := textValue("existing")
+	preserved := textValue("existing")
+	for _, tc := range []struct {
+		name      string
+		element   interface{}
+		node      *Node
+		want      interface{}
+		wantError error
+	}{
+		{
+			name:    "named primitive",
+			element: new(textValue),
+			node:    &Node{Kind: reflect.String, Value: "hello"},
+			want:    textValue("HELLO"),
+		},
+		{
+			name:    "empty input is unmarshaled",
+			element: &existing,
+			node:    &Node{Kind: reflect.String},
+			want:    textValue(""),
+		},
+		{
+			name:    "disabled input is not unmarshaled",
+			element: &preserved,
+			node:    &Node{Kind: reflect.String, Value: "invalid", Disabled: true},
+			want:    textValue("existing"),
+		},
+		{
+			name:    "struct scalar",
+			element: new(textStruct),
+			node:    &Node{Kind: reflect.Struct, Value: "hello"},
+			want:    textStruct{Value: "HELLO"},
+		},
+		{
+			name:    "nil pointer allocated",
+			element: new(*textStruct),
+			node:    &Node{Kind: reflect.Pointer, Value: "hello"},
+			want:    &textStruct{Value: "HELLO"},
+		},
+		{
+			name:    "structured input uses fields",
+			element: new(textStruct),
+			node: &Node{Kind: reflect.Struct, Value: "invalid", Children: []*Node{
+				{
+					FieldName: "Value",
+					Value:     "hello",
+				},
+			}},
+			want: textStruct{Value: "HELLO"},
+		},
+		{
+			name:    "struct slice from text",
+			element: new([]textStruct),
+			node:    &Node{Kind: reflect.Slice, Value: "hello,world"},
+			want: []textStruct{
+				{
+					Value: "HELLO",
+				},
+				{
+					Value: "WORLD",
+				},
+			},
+		},
+		{
+			name:    "slice-kind elements",
+			element: new([]net.IP),
+			node:    &Node{Kind: reflect.Slice, Value: "192.0.2.1,192.0.2.2"},
+			want:    []net.IP{net.ParseIP("192.0.2.1"), net.ParseIP("192.0.2.2")},
+		},
+		{
+			name:    "named string map values",
+			element: new(map[string]textValue),
+			node: &Node{Kind: reflect.Map, Children: []*Node{
+				{
+					Name:  "key",
+					Value: "hello",
+				},
+			}},
+			want: map[string]textValue{"key": "HELLO"},
+		},
+		{
+			name:      "unmarshal error",
+			element:   new(textValue),
+			node:      &Node{Kind: reflect.String, Value: "invalid"},
+			wantError: errTextValue,
+		},
+		{
+			name:      "slice unmarshal error",
+			element:   new([]textValue),
+			node:      &Node{Kind: reflect.Slice, Value: "hello,invalid"},
+			wantError: errTextValue,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			err := Fill(tc.element, tc.node, FillerOpts{})
+			if tc.wantError != nil {
+				require.ErrorIs(t, err, tc.wantError)
+				return
+			}
+			require.NoError(t, err)
+			assert.Equal(t, tc.want, reflect.ValueOf(tc.element).Elem().Interface())
+		})
+	}
+}
 
 func TestFill(t *testing.T) {
 	type expected struct {
