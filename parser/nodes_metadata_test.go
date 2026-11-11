@@ -2,6 +2,7 @@ package parser
 
 import (
 	"encoding/json"
+	"net"
 	"reflect"
 	"testing"
 
@@ -10,6 +11,86 @@ import (
 )
 
 type MySliceType []string
+
+func TestAddMetadataTextUnmarshaler(t *testing.T) {
+	for _, tc := range []struct {
+		name      string
+		structure interface{}
+		children  []*Node
+		wantKind  reflect.Kind
+		wantError bool
+	}{
+		{
+			name:      "scalar struct",
+			structure: &struct{ Value textStruct }{},
+			wantKind:  reflect.Struct,
+		},
+		{
+			name:      "scalar struct pointer",
+			structure: &struct{ Value *textStruct }{},
+			wantKind:  reflect.Pointer,
+		},
+		{
+			name:      "structured unmarshaler",
+			structure: &struct{ Value textStruct }{},
+			children: []*Node{
+				{
+					Name:  "value",
+					Value: "hello",
+				},
+			},
+			wantKind: reflect.Struct,
+		},
+		{
+			name:      "structured unmarshaler pointer",
+			structure: &struct{ Value *textStruct }{},
+			children: []*Node{
+				{
+					Name:  "value",
+					Value: "hello",
+				},
+			},
+			wantKind: reflect.Pointer,
+		},
+		{
+			name:      "slice-kind unmarshaler elements",
+			structure: &struct{ Value []net.IP }{},
+			wantKind:  reflect.Slice,
+		},
+		{
+			name:      "ordinary struct still rejects scalar",
+			structure: &struct{ Value struct{ Host string } }{},
+			wantError: true,
+		},
+		{
+			name:      "ordinary nested slices remain unsupported",
+			structure: &struct{ Value [][]string }{},
+			wantError: true,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			child := &Node{Name: "value", Children: tc.children}
+			if len(tc.children) == 0 {
+				child.Value = "hello"
+			}
+			node := &Node{Name: "gonfig", Children: []*Node{child}}
+			err := AddMetadata(tc.structure, node, MetadataOpts{})
+			if tc.wantError {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			assert.Equal(t, tc.wantKind, child.Kind)
+			assert.Equal(t, "Value", child.FieldName)
+			assert.False(t, child.Disabled)
+			if len(tc.children) > 0 {
+				assert.Equal(t, "Value", child.Children[0].FieldName)
+				assert.Equal(t, reflect.String, child.Children[0].Kind)
+				assert.Equal(t, "hello", child.Children[0].Value)
+			}
+		})
+	}
+}
 
 func TestAddMetadata(t *testing.T) {
 	type expected struct {
